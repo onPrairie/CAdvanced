@@ -1,0 +1,590 @@
+一、Shell编程简介
+之前课程中已经介绍过，在操作系统的内核kernel外部有一个Shell层，Shell的作用是保护内核kernel不受损害。同时，Shell接收用户对Linux系统的操作指令并传递给内核，之后由内核执行。
+之前学习过的Shell命令都是运行在Shell层上的，每次我们通过terminal输入一条命令，再通过Shell交给内核执行。有时，我们的需求过于复杂，需要执行多条命令，此时一条一条的在terminal内输入命令会十分的繁琐。Shell层提供给我们一个脚本工具，我们可以将想要依次执行的命令写成脚本文件，再将脚本文件发送给Shell。这样Shell就会按照脚本文件内记载的命令依次执行，从而实现了自动化。
+//Shell脚本在Windows系统内称为“批处理文件”（.bat文件），本质相同
+也就是说，Shell脚本的实质就是Shell命令的有序集合。
+1、编译型语言与解释性语言
+本质上来说，编程并让计算机执行实际上是一个将其中一种语言（编程语言）翻译成另外一种语言（机器语言）的过程。那么翻译语言肯定需要一定的翻译策略。编程语言从源代码变成计算机识别的可执行程序有“编译”和“解释”两种方式。
+1）编译
+	-需要编译器
+	-对代码进行整体检查
+	-主要进行词法检查、语法分析、语义检查和中间代码生成、代码优化、目标代码生成5部分
+	-若代码有错误，则停止编译并报错；若无错误，则会生成目标代码
+	-执行效率较高
+	-代表语言：C/C++
+2）解释
+	-需要解释器
+	-依次执行代码内每条命令，每句执行一次
+	-只会运行到当前语句时才会翻译该命令
+	-若代码有错误，则在出错语句处停止，而该语句上面的语句已经被执行
+	-执行效率较低
+	-代表语言：Python、JavaScript、Shell脚本
+我们在进行Shell编程的时候，本质上是将多条Shell命令写在一个文件内（脚本），然后terminal按照该文件内每条命令开始执行命令。因此Shell脚本是一种典型的解释性编程语言。
+2、Shell编程的基本步骤
+我们进行Shell编程有以下几个步骤：
+1.建立Shell脚本文件
+2.给Shell脚本文件可执行的权限
+3.执行Shell脚本
+示例：使用Shell编程
+第一步：建立Shell脚本文件，文件名为myshell.sh。文件内容：
+#!/bin/bash
+date
+cat myshell.sh
+ping -c 3 114.114.114.114
+echo "hello world"
+
+脚本内的命令分别代表：
+1.#!/bin/bash是Shell脚本文件的固定开头，该命令说明了这个Shell脚本在哪个程序上执行。在这里表示使用/bin/bash来执行这个脚本。
+注：在Shell脚本中，#开头的行表示注释。
+2.打印当前系统时间
+3.查看myshell.sh文件内容
+4.ping3次114.114.114.114检查网络通断
+5.在终端打印hello world
+
+第二步：给Shell脚本文件可执行的权限
+我们刚刚写的Shell脚本文件只是一个普通的文本文件，没有可执行的权限，因此我们需要给该文件添加可执行权限。
+chmod 0775 myshell.sh
+这样myshell.sh就具有可执行权限了。我们可以使用ls -l命令查看该文件的权限
+
+第三步：执行该Shell脚本
+./myshell.sh
+执行该Shell脚本即可查看效果
+
+二、Shell编程的变量
+和C语言一样，Shell编程也有变量。在Shell脚本内，所有的变量都是字符串类型但是不支持数据类型（整型、字符型、浮点型等），并且无需对变量进行声明。
+在sh/bash中有4种变量：
+	-用户自定义变量
+	-位置参数（命令行参数）
+	-预定义变量
+	-环境变量
+1、用户自定义变量
+Shell编程允许用户自定义变量来存储数据，但不支持数据类型（整型、字符型、浮点型等），任何变量的值都被解释成一个字符串。变量名命名规则如下：
+	1.首字符必须是字母或者下划线
+	2.中间不能有空格，可以使用下划线_表示空格
+	3.不能使用除下划线外其他的标点符号
+我们可以使用=给变量赋值，格式为：
+	变量名=变量值
+注意等号两边没有空格。在Shell编程中变量名一般使用全大写字母，为了与Shell命令区分。
+	COUNT=1
+若想调用一个变量的值，则需要在该变量名前面加上$。例如：
+#!/bin/bash
+COUNT=1
+VAR="hello world"
+echo $COUNT
+echo COUNT
+echo $VAR
+注意第一个echo命令与第二个echo命令输出的区别。第一个echo命令会输出COUNT变量的值1，而第二个echo命令会将COUNT当做待输出的字符串处理，会输出COUNT。
+Shell编程支持变量互相赋值，赋值方向为从右向左。例如：
+Y=2
+X=$Y
+则变量X内就得到了变量Y的值2。
+某些情况下，我们定义的变量会与其他文字混淆。例如：
+num=2
+echo "this is the $numnd"
+此时执行该Shell脚本不会输出"this is the 2nd"而会输出"this is the"，因为echo命令无法找到一个名为"numnd"的变量。我们可以使用花括号来包裹变量名，被花括号包裹的字符串会被Shell当做是一个变量来处理。
+num=2
+echo "this is the ${num}nd"
+这样就可以输出"this is the 2nd"。
+我们可以使用unset命令删除已定义过的变量。例如：
+Z=hello
+echo $Z
+unset Z
+echo $Z
+则第二次执行的时候就不会输出变量Z的值。
+
+2、位置变量（命令行参数）
+由系统提供的参数称为位置参数，其作用等价于C语言中main函数传参的“命令行参数”。位置参数可以使用$+数字的形式获得。
+	$0 与键入命令一样
+	$1~$9 第一个到第九个命令行参数
+例如：
+#!/bin/bash
+echo "this is 0" $0
+echo "this is 1" $1
+在执行该Shell脚本的时候我们携带一个命令行参数：
+./myshell 123
+则会输出：
+this is 0 ./myshell.sh
+this is 1 123
+
+3、预定义变量
+Shell编程内事先定义了一些变量，用户只能使用这些变量而不能重新定义它们。所有的预定义变量都由$符号和另一个符号构成，常用的预定义变量如下：
+	$# 命令行参数的个数
+	$@ 所有命令行参数（不计$0，同$*）
+	$? 前一个命令的退出状态
+	$* 所有命令行参数（不计$0，同$@）
+	$$ 正在执行的进程ID号
+示例：演示各个位置变量的值
+#!/bin/bash
+echo "this is 0" $0
+echo "this is 1" $1
+echo "this is #" $#
+echo "this is @" $@
+echo "this is ?" $?
+echo "this is *" $*
+echo "this is $" $$
+
+执行：./myshell.sh 123 456 789
+输出：
+this is 0 ./myshell.sh
+this is 1 123
+this is # 3
+this is @ 123 456 789
+this is ? 0
+this is * 123 456 789
+this is $ 2710
+
+4、环境变量
+环境变量适用于所有用户进程，环境变量均为大写。常用的环境变量如下：
+	HOME		用户工作目录所在地址，在文件/etc/passwd文件内存储
+	IFS（Internal Field Separator） 内部字段分隔符，默认是空格、tab以及换行符
+	PATH		Shell搜索路径
+	PS1			命令提示符格式（$及$前的字符）（PS是Prompt Sign的缩写）
+	PS2			换行提示符>
+	TERM		终端类型，常见的值有vt100、vt200、ansi、xterm等
+	HISTSIZE	保存历史记录的条目数
+	LOGNAME		当前登录用户名
+	HOSTNAME	主机名称
+	SHELL		当前使用的Shell类型
+	LANG/LANGUAGE与语言相关的环境变量
+	MAIL		用户的邮件存放目录
+	TMOUT		设置的脚本过期时间。例如TMOUT=3则表示该脚本3秒后过期
+	UID			登录用户的ID
+	USER		显示当前用户名
+	SECONDS		记录脚本从开始运行到结束耗费的时间
+示例：演示各个环境变量的值
+#!/bin/bash
+echo "HOME IS " $HOME
+echo "IFS IS " $IFS
+echo "PATH IS " $PATH
+echo "TERM IS " $TERM
+echo "LANGUAGE IS " $LANG
+echo "LOGNAME IS " $LOGNAME
+echo "HOSTNAME IS " $HOSTNAME
+echo "SHELL IS " $SHELL
+echo "MAIL IS " $MAIL
+echo "UID IS " $UID
+echo "USER IS " $USER 
+我们可以使用env命令查看更多的环境变量信息。
+我们可以使用export命令来自定义环境变量，使用unset命令清除环境变量。例如：
+export HELLO="Hello"
+echo $HELLO
+
+三、Shell编程语句
+Shell脚本由0条或多条Shell语句构成，Shell语句可以分为三类：
+1.说明性语句：以#开始到该行结束，对Shell语句说明，不会被执行。类似C语言的注释
+2.功能性语句：任意的Shell命令、用户程序或其他
+3.结构性语句：条件语句、分支语句、循环语句、循环控制语句等
+1、说明性语句（注释行语句）
+说明性语句可以出现在程序的任意位置，既可以独立一行，也可以接在其他语句后面。说明性语句都是以#开头的语句，在Shell脚本执行的时候不会被解释执行。
+2、功能性语句
+1）读入键盘的值read
+read从标准输入内读数据，并赋值给后面的变量。语法格式为：
+read 待赋值的变量
+一个read命令会读取一行。例如：
+read WORD#从输入读取一个字符串值赋值给变量WORD
+read VAR1 VAR2 VAR3#从输入内读取三个字符串值，分别赋值给变量VAR1、VAR2和VAR3
+
+思考：以下两种写法的操作一样吗？
+写法1：
+	read VAR1 VAR2 VAR3
+写法2：
+	read VAR1
+	read VAR2
+	read VAR3
+示例1：用户输入一个目录，然后显示输入的目录内的文件
+#!/bin/bash
+echo "please input a directory"
+read VAR1
+ls -l $VAR1
+示例2：用户输入年、月、日，然后按指定格式输出。注意输入的数据要以空格或tab分隔，不要用回车
+#!/bin/bash
+echo "please input time with format: yyyy mm dd:"
+read VAR1 VAR2 VAR3
+echo "today is ${VAR1}/${VAR2}/${VAR3}"
+2）算数运算命令expr
+命令expr用于变量间简单的整数四则运算，包括加、减、乘、除、取余。注意如果使用乘法需要使用\*的写法来取消*（通配符）的元字符含义。
+例如，在终端输入：
+expr 12 + 5 \* 3 #注意乘号的写法
+结果为27
+示例：从键盘读入两个数字，分别计算这两个数字的加、减、乘、除、取余的结果并输出
+#!/bin/bash
+echo "please input 2 numbers:"
+read VAR1
+read VAR2
+ADD=`expr $VAR1 + $VAR2` #反引号`的意思是使用后面命令的结果
+SUB=`expr $VAR1 - $VAR2`
+MUL=`expr $VAR1 \* $VAR2`
+DIV=`expr $VAR1 / $VAR2`
+MOD=`expr $VAR1 % $VAR2`
+
+echo $VAR1 + $VAR2 = $ADD
+echo $VAR1 - $VAR2 = $SUB
+echo $VAR1 \* $VAR2 = $MUL #注意乘号写法，表示该符号是字符而不是通配符*
+echo $VAR1 / $VAR2 = $DIV
+echo $VAR1 % $VAR2 = $MOD
+在示例脚本中，反引号`（位于键盘左上角）的作用是引用该命令的结果。ADD=`expr $VAR1 + $VAR2`的意思是首先执行expr命令得到计算结果，然后将该结果作为值赋值给变量ADD。
+3）测试命令test
+test命令可以测试三种对象：字符串、整数、文件属性，每种测试对象都有若干测试操作符。
+注意：在Shell编程中，0代表真，1代表假。这点和C语言相反。
+1.测试字符串
+用法：
+	test 字符串1 = 字符串2
+	若两字符串相等则结果为0，若不相等则结果为1。注意两个字符串中间的等号左右分别有空格。若没有空格则会将输入作为一个字符串。
+	test 字符串1 != 字符串2
+	若两字符串不相等则结果为0，若相等则结果为1。注意两个字符串中间的不等号左右分别有空格。若没有空格则会将输入作为一个字符串。
+	test -z 字符串
+	测试该字符串长度是否为0，若为0则结果为0，若不为0则结果为1。
+	test -n 字符串
+	测试该字符串长度是否不为0，若不为0则结果为0，若为0则结果为1。
+例如：
+test "answer" = "yes"
+echo $? #$?表示上一个命令的退出状态
+test命令还有一种写法：使用方括号。例如：
+test "answer" = "yes" 等价于 [ "answer" = "yes" ]。
+test -z "hello" 等价于 [ -z "hello" ]。
+注意左右方括号的两边都有空格。
+示例：从键盘读入两个字符串，判断这两个字符串是否相同。并测试字符串1是否是空
+#写法1
+#!/bin/bash
+echo "please input 2 strings:"
+read VAR1
+read VAR2
+test $VAR1 = $VAR2
+echo $?
+test -z $VAR1
+echo $?
+
+#写法2
+#!/bin/bash
+echo "please input 2 strings:"
+read VAR1
+read VAR2
+[ $VAR1 = $VAR2 ]
+echo $?
+[ -z $VAR1 ]
+echo $?
+
+2.测试整数关系
+	a -eq b	测试a与b是否相等
+	a -ne b	测试a与b是否不相等
+	a -gt b	测试a是否大于b
+	a -ge b	测试a是否大于等于b
+	a -lt b	测试a是否小于b
+	a -le b	测试a是否小于等于b
+示例：从键盘读入两个数，并判断两个数字是否相等
+#!/bin/bash
+read X Y
+if test $X -eq $Y
+then
+	echo "X equal Y"
+else
+	echo "X not equal Y"
+fi
+
+3.测试文件属性
+文件测试操作表达式通常是为了测试文件信息，一般由脚本来决定是否应该备份、复制、删除。test关于文件测试的操作符很多，这里只做简单的介绍。
+	-e name		测试一个文件是否存在
+	-d name		测试name是否为一个目录
+	-f name		测试name是否为普通文件
+	-L/h name	测试name是否为符号链接
+	-r name		测试name文件是否存在且可读
+	-w name		测试name文件是否存在且可写
+	-x name		测试name文件是否存在且可执行
+	-s name		测试文件是否存在且文件长度不为0
+	f1 -nt f2	测试文件f1是否比文件f2更新
+	f1 -ot f2	测试文件f1是否比文件f2更旧
+例如：
+test -e /home/linux/myshell.sh
+echo $?
+3、结构性语句
+结构性语句主要根据程序的运行状态、输入数据、变量取值、控制信号、运行时间等因素来控制程序的流程。主要包括：条件测试语句（二路分支）、多路分支语句、循环语句、控制循环语句和后台执行语句。
+1）条件测试语句
+1.if……then……fi语句
+类似C语言的if语句，格式为：
+if 表达式
+	then 命令
+fi
+如果表达式为真，则执行命令表中的命令，否则退出if语句。fi表示if语句的结束，类似C语言的右括号}。fi和if必须成对出现。
+2.if……then……else……fi语句
+类似C语言的if-else语句，格式为：
+if 表达式
+	then 命令1
+else
+	命令2
+fi
+如果表达式为真，则执行命令表中的命令，否则执行else下命令。
+3.if……then……elif……fi语句
+类似C语言的if-else语句多重并列使用，格式为：
+if 表达式1
+	then 命令1
+elif 表达式2
+	then 命令2
+……
+else
+	命令n
+fi
+如果表达式1为真，则执行命令表中的命令1，否则判断表达式2；若表达式2为真则执行命令2……若所有表达式都不为真，则执行else下命令。
+示例：从键盘读入一个文件判断该文件是否存在，并判断该文件类型（普通文件/目录/未知文件）
+#!/bin/bash
+echo "please input a filename"
+read FILE
+if [ ! -e $FILE ] # 对test的结果取“非”
+then
+	echo "file not exist"
+elif [ -L $FILE ]
+then
+	echo "file is a symbollink"
+elif [ -d $FILE ]
+then
+	echo "file is a directory"
+elif [ -f $FILE ]
+then
+	echo "file is a regular file"
+else
+	echo "Unknown"
+fi
+练习：将示例程序改成使用命令行传参的形式。注意考虑命令行参数未传参的情况。
+#!/bin/bash
+if [ $# -eq 0 ]
+then
+	echo "No arguments"
+	exit #直接退出脚本
+fi
+if [ ! -e $1 ]
+then
+	echo "file not exist"
+elif [ -L $1 ]
+then
+	echo "file is a symbollink"
+elif [ -d $1 ]
+then
+	echo "file is a directory"
+elif [ -f $1 ]
+then
+	echo "file is a regular file"
+else
+	echo "Unknown"
+fi
+
+2）多路分支语句
+多路分支语句case可以用于实现多路分支，类似C语言内switch()语句下的case语句。格式为：
+case 字符串变量 in #case语句只能检测字符串变量
+	模式1)
+		命令表1
+		;; #退出case语句用双分号
+	模式2|模式3) #若多个模式共用则使用|分隔
+		命令表2
+		;;
+	模式4)
+		命令表3
+		;;
+	……
+	模式n) #模式n常用通配符*表示所有其他模式
+		命令表n
+		;; #最后一个模式的双分号可以省略
+esac
+示例：从命令行传参file1或file2或file3，并输出传参结果
+#!/bin/bash
+if [ $# -eq 0 ]
+then
+	echo "No arguments"
+	exit
+fi
+case $1 in
+	file1)
+		echo "You choose file1"
+		;;
+	file2)
+		echo "You choose file2"
+		;;
+	file3|4)
+		echo "You choose file3/4"
+		;;
+	*)
+		echo "You MUST choose a file"
+		;;
+esac
+
+3）循环语句
+循环语句有两类：当循环次数已经确定时，则使用for循环语句；当循环次数未定的时候，则使用while循环语句。循环语句的语句括号用do和done来确定。
+1.for循环语句
+for循环语句一般用于循环次数确定的时候。格式为：
+for 变量名 in 单词表
+do
+	命令表
+done
+变量依次取出单词表内的所有数值，每取出一个数值，就执行一次循环，因此for循环语句的循环次数由单词表内数值个数决定
+示例：从命令行传参一个目录名，然后将该目录内所有文件复制到~/backup目录下
+#!/bin/bash
+if [ $# -eq 0 ]
+then
+	echo "No arguments"
+	exit
+fi
+if [ ! -d $1 ] #如果传参命令行不是目录
+then
+	echo "$1 not a directory"
+	exit
+fi
+if [ ! -d $HOME/backup ] #如果backup目录不存在则需要创建
+then
+	mkdir $HOME/backup
+fi
+if [ `ls $HOME/backup | wc -l` -ne 0 ] #如果backup目录非空则需要清空
+then
+	echo "$HOME/backup is not empty, need clean……"
+	rm -rf $HOME/backup
+	mkdir $HOME/backup
+	echo "clean all files in $HOME/backup"
+fi
+FLIST=`ls $1` #获取参数
+for FILE in $FLIST #让FILE变量从单词表中取数据
+do
+	cp $1/$FILE $HOME/backup
+	echo "$FILE copied"
+done
+echo "Backup Completed"
+
+2.while循环语句
+若无法事先确定循环次数，则我们不推荐使用for循环语句因为无法事先设置好单词表。此时我们可以使用while循环语句。while循环语句适用于无法事先预估循环次数的情况。while语句的格式为：
+while 命令或表达式
+do
+	命令表
+done
+while语句首先会执行后面的命令或者判断表达式的值，如果为真则执行循环，然后再次判断；若为假则退出循环。
+示例：批量生成名字为"文件名+数字"的空白文件，其中文件名和数字都从命令行传参。例如输入
+./proj.sh nihao 5
+则会生成nihao1、nihao2、nihao3、nihao4、nihao5
+#!/bin/bash
+if [ $# -eq 0 ]
+then
+	echo "No arguments"
+	exit
+elif [ $# -lt 2 ]
+then
+	echo "Arguments are too few"
+	exit
+fi
+echo "files will store in directory: $HOME/blankfile" #提示用户生成的文件在~/blankfile内
+if [ ! -d $HOME/blankfile ] #如果blankfile目录不存在则需要创建
+then
+	mkdir $HOME/blankfile
+fi
+if [ ! `ls $HOME/blankfile | wc -l` -eq 0 ] #如果blankfile目录非空则需要清空
+then
+	rm -rf $HOME/blankfile
+	mkdir $HOME/blankfile
+fi
+LOOP=$2 #循环次数
+i=1 #控制循环状态变量
+while [ $i -le $LOOP ]
+do
+	touch $HOME/blankfile/$1$i
+	i=`expr $i + 1` #等价于i++
+done
+echo "CreateBlankFiles Completed"
+
+4）循环控制语句
+Shell脚本中可以使用break语句和continue语句来控制循环停止。continue语句的作用是结束本次循环进入下次循环。而break语句的作用则是跳出循环。
+示例1：终端会输出10个数，在数字5处使用continue，则不会输出数字5
+#!/bin/bash
+for i in 1 2 3 4 5 6 7 8 9 10
+do
+	if [ $i -eq 5 ]
+	then
+		continue
+	fi
+	echo "$i"
+done
+示例2：将示例1的脚本修改，将continue修改为break，则输出到数字4之后循环结束
+#!/bin/bash
+for i in 1 2 3 4 5 6 7 8 9 10
+do
+	if [ $i -eq 5 ]
+	then
+		break
+	fi
+	echo "$i"
+done
+练习1：编写一个脚本，输出9*9乘法表
+#!/bin/bash
+for i in 1 2 3 4 5 6 7 8 9
+do
+	for j in 1 2 3 4 5 6 7 8 9
+	do
+		MUL=`expr $i \* $j` #注意乘号写法
+		echo -e "$j*$i=$MUL\t\c"
+		#echo -e：开启转义字符
+		#t：制表符  c：不换行
+		#"echo -e"和'\c'连用可以关闭换行
+		if [ $i -eq $j ] #j>i的部分无需计算
+		then
+			break
+		fi
+	done
+	echo "" #换行
+done
+练习2（选做）：编写一个脚本，测试当前子网内有多少主机可以连通（使用ping命令）
+提示：IP地址范围为192.168.0.1~192.168.0.254 或 192.168.1.1~192.168.1.254（根据当前子网确定范围）
+答案：
+#!/bin/bash
+i=1
+COUNT=0
+while [ $i -le 254 ]
+do
+	echo "---------------------------"
+	echo "will ping host:$i"
+	ping -c 1 192.168.0.$i
+	if [ $? -eq 0 ]
+	then
+		echo "host$i can be connected"
+		COUNT=`expr $COUNT + 1`
+	else
+		echo "host$i cannot be connected"
+	fi
+	i=`expr $i + 1`
+done
+echo "---------------------------"
+echo "There are $COUNT host can be connected"
+四、Shell编程函数
+Shell脚本支持自定义函数功能。我们可以将固定功能、需要多次调用的一组命令封装在一个函数内，这样我们需要使用该功能的时候只需调用该函数即可。
+函数在调用前必须先定义，且在顺序上必须放在调用函数前面。
+调用函数时可以使用参数传递，函数内使用return命令将运行结果返回给调用程序。
+1、函数定义
+函数定义的格式为：
+格式1：
+function_name(){
+	命令
+	……
+}
+格式2：
+function function_name(){
+	命令
+	……
+}
+2、函数调用
+//实际上，在Shell编程中，函数被看成“许多Shell命令整合成一个大的Shell命令”，因此调用函数与执行一个Shell命令无本质区别
+1）无参数无返回值
+若调用的函数无需返回值也无需传参，则像普通命令一样即可
+示例：写一个打印hello world的子函数并调用
+#!/bin/bash
+hello(){
+	echo "hello world"
+}
+hello #调用函数
+2）有参数有返回值
+若函数需要传递参数，也需要得到返回值，则有两种调用方式：
+方式1：
+value=`function_name $arg1 $arg2……`
+方式2：
+function_name $arg1 $arg2……
+echo $?
+示例：编写一个函数add，计算两个数的和，两个数使用传参的形式获得
+#!/bin/bash
+add(){
+	a=$1
+	b=$2
+	z=`expr $a + $b`
+	echo "the num is $z"
+}
+add $1 $2
