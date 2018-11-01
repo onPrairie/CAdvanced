@@ -1,0 +1,8 @@
+c语言的可变参数：在过去的学习中，c语言参数都是固定的。
+但在学习的过程中，有两个函数交特殊：printf和scanf
+
+可变参数的头文件：#include <stdarg>
+
+在头文件里主要看三个宏：
+va_start,va_arg,va_end
+和一个参数va_list;
