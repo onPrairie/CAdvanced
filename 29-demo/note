@@ -1,0 +1,6 @@
+printf 是写到显存中
+fprintf 就是写到缓存中
+
+fprintf的作用：1，拼接字符串 2，将数字字符传化
+
+字符串转数字：atoi  atof 
